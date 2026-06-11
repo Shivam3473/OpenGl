@@ -1,0 +1,146 @@
+// Shaders : Uniforms : Changing color of Rectangle with time
+#include<iostream>
+#include<glad/glad.h>
+#include<GLFW/glfw3.h>
+#include<cmath>
+
+using namespace std;
+
+/*First of all, uniforms are global. Global, meaning that a uniform variable is unique per shader program object, and can be accessed from any shader at any stage in the shader program. Second, whatever you set the uniform value to, uniforms will keep their values until they're either reset or updated.
+
+To declare a uniform in GLSL we simply add the uniform keyword to a shader with a type and a name. From that point on we can use the newly declared uniform in the shader. Let's see if this time we can set the color of the triangle via a uniform: */
+
+// u will find its declaration in the source code of the fragment dshader and thre further use of it in varying color with time stamps inside the while loop where we acess it and set its value
+
+void size_callback(GLFWwindow* window, int width, int height){
+    glViewport(0, 0, width, height);
+}
+// this has to be written for vertex shaders
+const char *vertexShaderSource = "#version 330 core\n"
+    "layout (location = 0) in vec3 aPos;\n"
+    "void main()\n"
+    "{\n"
+    "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+    "}\0";
+
+
+// this code for defining the surce code in glsl for the fragment shader and there we have 4d values for defining the color to be seen
+
+const char *fragmentShaderSource = "#version 330 core\n"
+"out vec4 FragColor;\n"
+"uniform vec4 ourColor; " // here we have set this uniform and thus this ourcolor is now global and could be acessed 
+"void main()\n"
+"{\n"
+"   FragColor = ourColor;\n"
+"}\n\0";
+
+int main(){
+    glfwInit();
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    GLFWwindow* window = glfwCreateWindow(800, 600, "WindowTitle", NULL, NULL);
+    if(window == NULL){
+        cout << "Failed to create window" << endl;
+        glfwTerminate();
+        return -1;
+    }
+    glfwMakeContextCurrent(window);
+
+    if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)){
+        cout << "Failed to initialize GLAD" << endl;
+        return -1;
+    }
+
+    glViewport(0, 0, 800, 600);
+    glfwSetFramebufferSizeCallback(window, size_callback);
+
+    // -------------RECTANGLE PRACTICE-----------------------------------
+
+   
+    // a better solution is to store only the unique vertices and then specify the order at which we want to draw these vertices in. In that case we would only have to store 4 vertices for the rectangle, and then just specify at which order we'd like to draw them.
+
+
+    float vertices[] = {
+     0.5f,  0.5f, 0.0f,  // top right
+     0.5f, -0.5f, 0.0f,  // bottom right
+    -0.5f, -0.5f, 0.0f,  // bottom left
+    -0.5f,  0.5f, 0.0f   // top left 
+};
+    unsigned int indices[] = {  // note that we start from 0!
+    0, 1, 3,   // first triangle
+    1, 2, 3    // second triangle
+};  
+    // WE use the element buffer objects to decide that even with 4 vertices and providing the order in which to draw those vertices we can typically work with the rectangle woithout either creating a triangle
+    unsigned int EBO;
+    glGenBuffers(1, &EBO);
+    
+
+
+
+
+    unsigned int VBO,VAO;
+    glGenVertexArrays(1,&VAO);
+    glBindVertexArray(VAO);
+    glGenBuffers(1,&VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    // rememwber for he element buffer object it needs to bounded aftwer the bao is bounded , overall do it before the veretx shader
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0); 
+
+    
+    unsigned int vertexShader;
+    vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+    glCompileShader(vertexShader);
+
+    unsigned int fragmentShader;
+    fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
+    glCompileShader(fragmentShader);
+
+    unsigned int shaderProgram;
+    shaderProgram = glCreateProgram();
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
+    glLinkProgram(shaderProgram);
+
+    while(!glfwWindowShouldClose(window)){
+        // ✅ Add these two lines at the top of the loop
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);   // background color
+        glClear(GL_COLOR_BUFFER_BIT);             // wipe the previous frame
+        
+        glUseProgram(shaderProgram); // activaing the link
+
+        // update the uniform color
+        float timeValue = glfwGetTime();  // gwe get the time
+        float greenValue = sin(timeValue) / 2.0f + 0.5f;  // we vary it using the instanteneous time
+        int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor"); // we acess the location
+        glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f); // here we finally set the value at the uniform ocation which is at the frragment shader source code
+
+
+
+        glBindVertexArray(VAO);
+        // simialrly hee this time instead of using the draw arrays function we need tot use the draw elelements
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    // ── Cleanup ───────────────────────────────────────────
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);// once after the shader program we r good to go and delete , all the stuff would be managed by this shader program itself
+    glDeleteProgram(shaderProgram);
+    glDeleteShader(vertexShader); 
+    glDeleteShader(fragmentShader); 
+    glfwTerminate();
+    return 0;
+}
