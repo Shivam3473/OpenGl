@@ -14,7 +14,9 @@
                 "${workspaceFolder}/MyProject/src/glad.c",
                 "-lglfw3dll",
                 "-o",
-                "${workspaceFolder}/MyProject/${fileBasenameNoExtension}.exe"
+                "${workspaceFolder}/MyProject/${fileBasenameNoExtension}.exe",
+                "-I",
+                "D:/IMPORTANT FOLDERS/CGS RND/OpenGl/MyProject/src/glm"
             ],
             "options": {
                 "cwd": "${workspaceFolder}/MyProject"
