@@ -85,6 +85,9 @@ int main(){
 
     stbi_image_free(data);
 
+    // here we want to enable the depth enable z buffer functinality  this is done so that the compiler does not gets confused of the prominent side to be simulated, also once it is enabled we would also want to disable it thus clear function used at last on this
+    glEnable(GL_DEPTH_TEST);  
+
     float vertices[] = {
     -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
      0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
@@ -169,6 +172,7 @@ int main(){
         // ✅ Add these two lines at the top of the loop
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f); // background color
         glClear(GL_COLOR_BUFFER_BIT);         // wipe the previous frame
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // thus that enagle function is cleared here 
 
          glm::mat4 model = glm::mat4(1.0f);
         model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));  
