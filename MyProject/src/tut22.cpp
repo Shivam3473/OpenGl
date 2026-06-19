@@ -119,7 +119,7 @@ const char *fragmentShaderSource = "#version 330 core\n"
                                    "   float dist = length(coord);\n"
                                    "   if (dist > 0.5)\n"
                                    "       discard;\n"
-                                   "   float intensity = 10.0 - (dist / 0.5);\n"
+                                   "   float intensity = 20.0 - (dist / 0.5);\n"
                                    "   FragColor = vec4(0.8f, 0.9f, 1.0f, intensity);\n"
                                    "}\n\0";
 
@@ -179,7 +179,7 @@ vector<float> CreateGridVertices(float size, int divisions)
 // Tune strength/softening to taste -- softening stops dz exploding to -inf right under a mass.
 vector<float> UpdateGridVertices(vector<float> vertices, const vector<Body> &bodies)
 {
-    const float strength = 0.00015f;
+    const float strength = 0.015f;
     const float softening = 0.05f;
 
     for (size_t i = 0; i < vertices.size(); i += 3)
@@ -233,9 +233,9 @@ int main()
     // ---------------------------------------------------------
 
     // We make up arbitrary values for G and Mass that look good on screen
-    const float G = 1.0f;  // Gravitational constant
-    const float M = 1.0f; // Mass of the central star
-    const float m = 1.0f;    // mass of the small stars
+    const float G = 0.012f;  // Gravitational constant
+    const float M = 1000.0f; // Mass of the central star
+    const float m = 25.0f;    // mass of the small stars
 
     // Central Star Position (Fixed at center)
     float star_x = 0.0f;
@@ -247,12 +247,12 @@ int main()
 
 
     // Orbiting Particle Initial State
-    float pos_1_x = 0.97000436f; // Start 0.6 units to the right
-    float pos_1_y = -0.24308753f;
+    float pos_1_x = 10.0f; // Start 0.6 units to the right
+    float pos_1_y = -0.0f;
 
     // orbiting position initial state for particle 2
-    float pos_2_x=-0.97000436f;
-    float pos_2_y=0.24308753f;
+    float pos_2_x=-0.0f;
+    float pos_2_y=10.0f;
 
     // Calculate initial velocity for a perfect circular orbit: v = sqrt(G*M/r)
     float r_initial = sqrt((pos_1_x - star_x) * (pos_1_x - star_x) + (pos_1_y - star_y) * (pos_1_y - star_y));
@@ -260,12 +260,12 @@ int main()
 
     // writing velocites initial for both particles
              
-    float vel_1_x=0.4662036850,   vel_1_y=0.4323657300f;
-    float vel_2_x=0.4662036850f,   vel_2_y=0.43236573f;
-    float vel_star_x=-0.93240737f;
-    float vel_star_y=-0.86473146f;
+    float vel_1_x=0.0f,   vel_1_y=v_circular;
+    float vel_2_x=-1*v_circular,   vel_2_y=0.0f;
+    float vel_star_x=-0.0f;
+    float vel_star_y=-0.0;
 
-    float dt = 0.0002f; // Time step (how fast the simulation runs per frame)
+    float dt = 0.2f; // Time step (how fast the simulation runs per frame)
 
     // ---------------------------------------------------------
 
@@ -291,7 +291,7 @@ int main()
     glEnableVertexAttribArray(0);
 
     // ADDED: grid buffer. Built once -- only the z-values get rewritten every frame.
-    vector<float> gridVertices = CreateGridVertices(2.0f, 40); // size=2.0 units, 40x40 cells -- tune to taste
+    vector<float> gridVertices = CreateGridVertices(100.0f, 150); // size=2.0 units, 40x40 cells -- tune to taste
     unsigned int gridVAO, gridVBO;
     glGenVertexArrays(1, &gridVAO);
     glBindVertexArray(gridVAO);
@@ -428,7 +428,7 @@ int main()
         unsigned int transformLoc = glGetUniformLocation(shaderProgram, "transform");
         glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
         glBindVertexArray(VAO);
-        // CHANGED: We now draw 2 points instead of 1
+        
         glDrawArrays(GL_POINTS, 0, 3);
 
         glfwSwapBuffers(window);
