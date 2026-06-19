@@ -73,7 +73,7 @@ void processInput(GLFWwindow *window) {
 }
 
 // ---------------------------------------------------------
-// CHANGE FOR COMPUTE: The Compute Shader 
+// CHANGE FOR COMPUTE: The Compute Shader..
 // This runs on the GPU, calculating gravity for N bodies simultaneously.
 // ---------------------------------------------------------
 const char* computeShaderSource = "#version 430 core\n"
