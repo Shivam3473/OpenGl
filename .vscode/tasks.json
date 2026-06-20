@@ -8,6 +8,7 @@
             "args": [
                 "-g",
                 "-std=c++17",
+                "-O3",
                 "-I${workspaceFolder}/MyProject/include",
                 "-L${workspaceFolder}/MyProject/lib",
                 "${file}",
